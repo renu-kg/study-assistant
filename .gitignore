@@ -1,0 +1,10 @@
+.env
+venv/
+venv-python313/
+__pycache__/
+*.pyc
+*.pyo
+data/vector_db/*
+data/user_data/*
+.DS_Store
+*.log

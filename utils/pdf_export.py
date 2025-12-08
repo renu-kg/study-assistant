@@ -1,0 +1,135 @@
+# utils/pdf_export.py
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.lib import colors
+from datetime import datetime
+import os
+
+def export_plan_to_pdf(plan, filename="study_plan.pdf"):
+    """
+    Export study plan to PDF
+    
+    Args:
+        plan: Study plan dictionary
+        filename: Output filename
+    
+    Returns:
+        str: Path to generated PDF
+    """
+    os.makedirs("data/user_data", exist_ok=True)
+    filepath = os.path.join("data/user_data", filename)
+    
+    doc = SimpleDocTemplate(filepath, pagesize=letter)
+    story = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1f77b4'),
+        spaceAfter=30,
+        alignment=1  # Center
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        textColor=colors.HexColor('#1f77b4'),
+        spaceAfter=12
+    )
+    
+    # Title
+    story.append(Paragraph("📚 Personalized Study Plan", title_style))
+    story.append(Spacer(1, 0.2*inch))
+    
+    # Plan overview
+    story.append(Paragraph("Plan Overview", heading_style))
+    overview_data = [
+        ["Goal:", plan.get('main_goal', 'N/A')],
+        ["Total Hours:", str(plan.get('total_hours', 0))],
+        ["Days Available:", str(plan.get('days_available', 0))],
+        ["Created:", datetime.now().strftime("%Y-%m-%d")],
+    ]
+    overview_table = Table(overview_data, colWidths=[2*inch, 4*inch])
+    overview_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey)
+    ]))
+    story.append(overview_table)
+    story.append(Spacer(1, 0.3*inch))
+    
+# Subtasks
+    story.append(Paragraph("📋 Study Tasks", heading_style))
+    for task in plan.get('subtasks', []):
+        task_text = f"<b>{task['task_id']}. {task['task']}</b> ({task['estimated_hours']}h) - Priority: {task['priority']}"
+        story.append(Paragraph(task_text, styles['Normal']))
+        story.append(Paragraph(f"&nbsp;&nbsp;&nbsp;&nbsp;{task['description']}", styles['Normal']))
+        if 'resources' in task and task['resources']:
+            story.append(Paragraph("Suggested Resources:", styles['Normal']))
+            for resource in task['resources']:
+                story.append(Paragraph(f"&nbsp;&nbsp;• {resource}", styles['Normal']))
+        story.append(Spacer(1, 0.1*inch))
+
+    
+    story.append(Paragraph("🎯 Milestones", heading_style))
+    for milestone in plan.get('milestones', []):
+        milestone_text = f"<b>{milestone['milestone']}</b> - Due: {milestone['due_date']}"
+        story.append(Paragraph(milestone_text, styles['Normal']))
+        # If your milestone includes tasks/resources, list them here:
+        if 'tasks_to_complete' in milestone:
+            story.append(Paragraph("Tasks to Complete:", styles['Normal']))
+            for tid in milestone['tasks_to_complete']:
+                t = next((task for task in plan.get('subtasks', []) if task['task_id'] == tid), None)
+                if t:
+                    story.append(Paragraph(f"&nbsp;&nbsp;• {t['task']}", styles['Normal']))
+        story.append(Spacer(1, 0.1*inch))
+
+    
+    # Daily Schedule (first 7 days)
+    story.append(PageBreak())
+    story.append(Paragraph("📅 Weekly Schedule (First Week)", heading_style))
+    
+    schedule_data = [["Day", "Date", "Topics", "Duration"]]
+    for day in plan.get('daily_schedule', [])[:7]:
+        schedule_data.append([
+            str(day['day']),
+            day['date'],
+            ", ".join(day['topics'][:2]),  # Limit topics
+            f"{day['duration_hours']}h"
+        ])
+    
+    schedule_table = Table(schedule_data, colWidths=[0.7*inch, 1.2*inch, 3*inch, 1*inch])
+    schedule_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
+    ]))
+    story.append(schedule_table)
+    
+    # Footer
+    story.append(Spacer(1, 0.5*inch))
+    story.append(Paragraph(
+        "<i>Generated by Virtual Study Assistant - Powered by AI</i>",
+        styles['Normal']
+    ))
+    
+    # Build PDF
+    doc.build(story)
+    print(f"✅ PDF exported to: {filepath}")
+    
+    return filepath
