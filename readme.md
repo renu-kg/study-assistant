@@ -38,19 +38,28 @@ This project provides personalized study planning, AI-based concept explanations
    cd study-assistant
 
 2. Create a virtual environment:
+   ```bash
    python -m venv venv
 
-3. Activate the environment:
-   - On Windows: venv\Scripts\activate 
-   - On Mac/Linux: source venv/bin/activate
+4. Activate the environment:
+   - On Windows:
+     ```bash
+      venv\Scripts\activate
+     
+   - On Mac/Linux:
+     ```bash
+     source venv/bin/activate
 
-4. Install dependencies:
+6. Install dependencies:
+   ```bash 
    pip install -r requirements.txt
 
-5. Create a .env file and add your Groq API Key:
+8. Create a .env file and add your Groq API Key:
+   ```bash
    GROQ_API_KEY=your_api_key_here
 
-6. Run the application:
+10. Run the application:
+   ```bash
    streamlit run app.py
 
 ---
@@ -148,10 +157,10 @@ The core idea is to help students not only *learn content*, but also *plan, revi
 
 | Name                  | USN         |
 |-----------------------|-------------|
-| Pavan Kumar Hiremath  | 4BD23CS153  |
+| Pavan Kumar Hiremath  | 4BD23CS129  |
 | Renu K G              | 4BD23CS169  |
-| Sachin M H            | 4BD23CS181  |
-| Sakshi P B            | 4BD23CS183  |
+| Sachin M H            | 4BD23CS175  |
+| Sakshi P B            | 4BD24CS413  |
 
 ---
 
