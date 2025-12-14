@@ -62,6 +62,7 @@ This project provides personalized study planning, AI-based concept explanations
    ```bash
    streamlit run app.py
 
+```
 ---
 
 ## 🧠 Project Concept
